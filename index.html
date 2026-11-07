@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="bn" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>বাংলাদেশি জমি পরিমাপ ও ডিজিটাল রূপান্তর ক্যালকুলেটর</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Hind Siliguri -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Hind Siliguri', 'sans-serif'],
+                    },
+                    colors: {
+                        emerald: {
+                            800: '#065f46',
+                            900: '#064e3b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Hind Siliguri', sans-serif; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col justify-between">
+
+    <!-- Header Section -->
+    <header class="bg-gradient-to-r from-emerald-800 to-teal-900 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-emerald-700/60 rounded-xl border border-emerald-500/30 shadow-inner">
+                    <svg class="w-8 h-8 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-white">ভূমি রূপান্তরক ও পরিমাপক</h1>
+                    <p class="text-xs sm:text-sm text-emerald-200">বাংলাদেশের সর্বাঙ্গীন ডিজিটাল ভূমি হিসাব রূপান্তর সিস্টেম</p>
+                </div>
+            </div>
+
+            <!-- Regional Bigha Selector Top Control -->
+            <div class="bg-emerald-950/60 backdrop-blur border border-emerald-600/40 p-2 rounded-xl flex items-center gap-2">
+                <label for="bighaStandard" class="text-xs sm:text-sm font-medium text-emerald-200 whitespace-nowrap pl-1">বিঘা মান কেন্দ্র:</label>
+                <select id="bighaStandard" onchange="performConversion(); calculateArea();" class="bg-emerald-800 text-white text-xs sm:text-sm rounded-lg px-2.5 py-1.5 focus:ring-2 focus:ring-emerald-400 focus:outline-none border border-emerald-600 cursor-pointer">
+                    <option value="33" selected>সরকারি প্রমিত (১ বিঘা = ৩৩ শতাংশ)</option>
+                    <option value="35">আঞ্চলিক ৩৫-শতক (১ বিঘা = ৩৫ শতাংশ)</option>
+                    <option value="30">আঞ্চলিক ৩০-শতক (১ বিঘা = ৩০ শতাংশ)</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-grow space-y-8">
+
+        <!-- Navigation Tabs -->
+        <div class="border-b border-slate-200">
+            <nav class="-mb-px flex space-x-2 sm:space-x-8 overflow-x-auto pb-1" aria-label="Tabs">
+                <button id="tab-converter" onclick="switchTab('converter')" class="tab-btn border-emerald-600 text-emerald-700 whitespace-nowrap py-3 px-4 border-b-2 font-semibold text-base flex items-center gap-2 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                    একক রূপান্তরক (Converter)
+                </button>
+                <button id="tab-area" onclick="switchTab('area')" class="tab-btn border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 whitespace-nowrap py-3 px-4 border-b-2 font-medium text-base flex items-center gap-2 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                    জমির ক্ষেত্রফল হিসাব (Land Area Calculator)
+                </button>
+                <button id="tab-glossary" onclick="switchTab('glossary')" class="tab-btn border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 whitespace-nowrap py-3 px-4 border-b-2 font-medium text-base flex items-center gap-2 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    ভূমি অভিধান ও নির্দেশিকা (Reference)
+                </button>
+            </nav>
+        </div>
+
+        <!-- TAB 1: CONVERTER SECTION -->
+        <section id="section-converter" class="space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+                <!-- Left Panel: Input & Unit Selection -->
+                <div class="lg:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+                            <span class="w-3 h-3 bg-emerald-600 rounded-full inline-block"></span>
+                            ইনপুট এবং একক নির্বাচন
+                        </h2>
+                        
+                        <!-- Value Input -->
+                        <div class="mb-5">
+                            <label for="inputValue" class="block text-sm font-semibold text-slate-700 mb-2">ইনপুট মান (পরিমাণ)</label>
+                            <input type="number" id="inputValue" value="1" step="any" min="0" placeholder="এখানে মান লিখুন..." oninput="performConversion()" class="w-full text-lg font-bold px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition bg-slate-50">
+                        </div>
+
+                        <!-- From Unit -->
+                        <div class="mb-5">
+                            <label for="fromUnit" class="block text-sm font-semibold text-slate-700 mb-2">কোন একক থেকে রূপান্তর করবেন</label>
+                            <select id="fromUnit" onchange="performConversion()" class="w-full text-base px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition bg-white font-medium cursor-pointer">
+                                <optgroup label="প্রচলিত একক">
+                                    <option value="shotok" selected>শতক / শতাংশ / ডেসিমেল</option>
+                                    <option value="katha">কাঠা</option>
+                                    <option value="bigha">বিঘা</option>
+                                    <option value="acre">একর</option>
+                                    <option value="hectare">হেক্টর</option>
+                                    <option value="kani">কানি (১২০ শতক মান)</option>
+                                    <option value="ganda">গণ্ডা</option>
+                                    <option value="chhatak">ছটাক</option>
+                                    <option value="paki">পাকি (১ বিঘা / ৩৩ শতক)</option>
+                                </optgroup>
+                                <optgroup label="দৈর্ঘ্য ভিত্তিক বর্গ একক">
+                                    <option value="sqft">বর্গফুট (Sq. Feet)</option>
+                                    <option value="sqyard">বর্গগজ / বর্গইয়ার্ড (Sq. Yard)</option>
+                                    <option value="sqmeter">বর্গমিটার (Sq. Meter)</option>
+                                    <option value="sqhaat">বর্গহাত (Sq. Haat)</option>
+                                    <option value="sqlink">বর্গলিংক (Sq. Link)</option>
+                                    <option value="sqkm">বর্গকিলোমিটার (Sq. Km)</option>
+                                    <option value="sqmile">বর্গমাইল (Sq. Mile)</option>
+                                </optgroup>
+                                <optgroup label="ক্ষুদ্র একক">
+                                    <option value="oyutangsho">অযুতাংশ (০.০১ শতক)</option>
+                                    <option value="kara">করা</option>
+                                    <option value="kranti">ক্রান্তি</option>
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <!-- Quick Increment Buttons -->
+                        <div class="flex gap-2 mb-6">
+                            <button onclick="setInputValue(1)" class="flex-1 py-1.5 px-3 bg-slate-100 hover:bg-emerald-100 hover:text-emerald-700 text-xs font-semibold rounded-lg transition border border-slate-200">১</button>
+                            <button onclick="setInputValue(5)" class="flex-1 py-1.5 px-3 bg-slate-100 hover:bg-emerald-100 hover:text-emerald-700 text-xs font-semibold rounded-lg transition border border-slate-200">৫</button>
+                            <button onclick="setInputValue(10)" class="flex-1 py-1.5 px-3 bg-slate-100 hover:bg-emerald-100 hover:text-emerald-700 text-xs font-semibold rounded-lg transition border border-slate-200">১০</button>
+                            <button onclick="setInputValue(100)" class="flex-1 py-1.5 px-3 bg-slate-100 hover:bg-emerald-100 hover:text-emerald-700 text-xs font-semibold rounded-lg transition border border-slate-200">১০০</button>
+                        </div>
+                    </div>
+
+                    <!-- Note Box -->
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-800 leading-relaxed">
+                        <div class="font-bold mb-1 flex items-center gap-1">
+                            <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            তথ্য টিপস:
+                        </div>
+                        উপরে ব্যবহৃত হিসাবসমূহ স্ট্যান্ডার্ড সরকারি পরিমাপ (১ শতক = ৪৩৫.৬০ বর্গফুট, ১ একর = ১০০ শতক, ১ হেক্টর = ২.৪৭ একর) এর উপর ভিত্তি করে স্বয়ংক্রিয়ভাবে সাজানো হয়েছে।
+                    </div>
+                </div>
+
+                <!-- Right Panel: Comprehensive Conversion Results Grid -->
+                <div class="lg:col-span-7 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                            <span class="w-3 h-3 bg-teal-600 rounded-full inline-block"></span>
+                            সকল এককে সমতুল্য পরিমাণ
+                        </h2>
+                        <span id="activeStandardBadge" class="text-xs bg-emerald-100 text-emerald-800 font-semibold px-2.5 py-1 rounded-full border border-emerald-300">
+                            ৩৩ শতক বিঘা
+                        </span>
+                    </div>
+
+                    <div id="resultsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[520px] overflow-y-auto pr-1">
+                        <!-- Dynamic Result Cards Inserted by JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: LAND AREA CALCULATOR SECTION -->
+        <section id="section-area" class="space-y-6 hidden">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h2 class="text-xl font-bold text-slate-900 mb-2">জমি পরিমাপ ও ক্ষেত্রফল রূপান্তর ক্যালকুলেটর</h2>
+                <p class="text-sm text-slate-600 mb-6">আপনার জমির আকৃতি বেছে নিয়ে আইল/বাহুগুলোর পরিমাপ দিন। স্বয়ংক্রিয়ভাবে মোট বর্গফুট, শতাংশ, কাঠা ও বিঘা বের হয়ে আসবে।</p>
+
+                <!-- Shape Selector & Unit Choice -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">জমির আকৃতি</label>
+                        <select id="shapeType" onchange="updateShapeInputs()" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none bg-slate-50 font-medium">
+                            <option value="rect">আয়তাকার (দৈর্ঘ্য × প্রস্থ)</option>
+                            <option value="quad_avg">বিষমবাহু চতুর্ভুজ (গড় দৈর্ঘ্য × গড় প্রস্থ)</option>
+                            <option value="triangle">ত্রিভুজাকার (তিন বাহু / হে রনস ফর্মুলা)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">পরিমাপের একক</label>
+                        <select id="calcUnit" onchange="calculateArea()" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none bg-slate-50 font-medium">
+                            <option value="feet" selected>ফুট (Feet)</option>
+                            <option value="haat">হাত (Haat)</option>
+                            <option value="link">লিংক (Link)</option>
+                            <option value="gaj">গজ (Yard)</option>
+                            <option value="meter">মিটার (Meter)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Input Fields Dynamic Container -->
+                <div id="shapeInputContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 p-5 bg-slate-50 rounded-xl border border-slate-200 mb-6">
+                    <!-- Dynamic inputs populated by JS -->
+                </div>
+
+                <!-- Area Results Highlight Box -->
+                <div class="bg-gradient-to-br from-emerald-900 to-teal-950 text-white p-6 rounded-2xl shadow-md border border-emerald-800">
+                    <h3 class="text-base font-semibold text-emerald-300 mb-4 border-b border-emerald-800 pb-2">হিসাবকৃত মোট ভূমির ফলাফল:</h3>
+                    
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+                        <div class="bg-emerald-900/50 p-3 rounded-xl border border-emerald-700/50">
+                            <div class="text-xs text-emerald-300 mb-1">মোট বর্গফুট</div>
+                            <div id="calcResultSqft" class="text-xl sm:text-2xl font-bold text-amber-300">০.০০</div>
+                            <div class="text-[10px] text-emerald-400">Sq. Feet</div>
+                        </div>
+
+                        <div class="bg-emerald-900/50 p-3 rounded-xl border border-emerald-700/50">
+                            <div class="text-xs text-emerald-300 mb-1">মোট শতাংশ / শতক</div>
+                            <div id="calcResultShotok" class="text-xl sm:text-2xl font-bold text-amber-300">০.০০</div>
+                            <div class="text-[10px] text-emerald-400">Shotok / Decimal</div>
+                        </div>
+
+                        <div class="bg-emerald-900/50 p-3 rounded-xl border border-emerald-700/50">
+                            <div class="text-xs text-emerald-300 mb-1">মোট কাঠা</div>
+                            <div id="calcResultKatha" class="text-xl sm:text-2xl font-bold text-amber-300">০.০০</div>
+                            <div class="text-[10px] text-emerald-400">Katha</div>
+                        </div>
+
+                        <div class="bg-emerald-900/50 p-3 rounded-xl border border-emerald-700/50">
+                            <div class="text-xs text-emerald-300 mb-1">মোট বিঘা</div>
+                            <div id="calcResultBigha" class="text-xl sm:text-2xl font-bold text-amber-300">০.০০</div>
+                            <div class="text-[10px] text-emerald-400">Bigha</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: REFERENCE & GLOSSARY SECTION -->
+        <section id="section-glossary" class="space-y-8 hidden">
+            <!-- Reference Quick Conversion Cards -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h2 class="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                    গুরুত্বপূর্ণ একক পরিমাপের সুত্রাবলী (Quick Reference)
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Card 1 -->
+                    <div class="bg-emerald-50/50 border border-emerald-200/80 p-4 rounded-xl">
+                        <h3 class="font-bold text-emerald-900 mb-2 border-b border-emerald-200 pb-1 text-base">১ শতাংশ (শতক / ডেসিমেল) =</h3>
+                        <ul class="text-xs text-slate-700 space-y-1.5 list-disc list-inside">
+                            <li><strong>৪৩৫.৬০</strong> বর্গফুট</li>
+                            <li><strong>৪৮.৪০</strong> বর্গগজ</li>
+                            <li><strong>৪০.৪৬ / ৪০.৪৭</strong> বর্গমিটার</li>
+                            <li><strong>১৯৩.৬০ / ১৯৪.৬</strong> বর্গহাত</li>
+                            <li><strong>১০০০</strong> বর্গলিংক</li>
+                            <li><strong>১০০</strong> অযুতাংশ</li>
+                        </ul>
+                    </div>
+
+                    <!-- Card 2 -->
+                    <div class="bg-teal-50/50 border border-teal-200/80 p-4 rounded-xl">
+                        <h3 class="font-bold text-teal-900 mb-2 border-b border-teal-200 pb-1 text-base">১ কাঠা =</h3>
+                        <ul class="text-xs text-slate-700 space-y-1.5 list-disc list-inside">
+                            <li><strong>৭২০</strong> বর্গফুট</li>
+                            <li><strong>৮০</strong> বর্গগজ</li>
+                            <li><strong>৬৬.৮৯</strong> বর্গমিটার</li>
+                            <li><strong>৩২০</strong> বর্গহাত</li>
+                            <li><strong>১৬</strong> ছটাক</li>
+                            <li><strong>১.৬৫</strong> শতাংশ (৩৩ শতক বিঘা হিসেবে)</li>
+                        </ul>
+                    </div>
+
+                    <!-- Card 3 -->
+                    <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl">
+                        <h3 class="font-bold text-slate-900 mb-2 border-b border-slate-200 pb-1 text-base">১ একর / ১ হেক্টর / ১ কানি =</h3>
+                        <ul class="text-xs text-slate-700 space-y-1.5 list-disc list-inside">
+                            <li><strong>১ একর:</strong> ১০০ শতক = ৪৩৫৬০ বর্গফুট = ৩.০৩ বিঘা</li>
+                            <li><strong>১ হেক্টর:</strong> ২.৪৭ একর = ৭.৪১ বিঘা = ১৪৮.২ কাঠা</li>
+                            <li><strong>১ কানি:</strong> ১২০ শতক = ১৭২৮০ বর্গফুট = ২৪ কাঠা</li>
+                            <li><strong>১ বিঘা:</strong> ২০ কাঠা = ১৪৪০০ বর্গফুট (প্রমিত)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Land Terms Glossary -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h2 class="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+                    <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    ভূমি সংক্রান্ত পরিভাষা ও গুরুত্বপূর্ণ ব্যাখ্যা
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition">
+                        <div class="font-bold text-emerald-800 text-base mb-1">১. খতিয়ান (Khotian)</div>
+                        <p class="text-xs text-slate-600 leading-relaxed">মৌজা ভিত্তিক এক বা একাধিক ভূমির মালিকের নাম, পিতা/স্বামীর নাম, ঠিকানা, হিস্যা (অংশ) এবং জমির দাগ নম্বরসহ ভূমির সর্বপ্রকার বিবরণ নিয়ে প্রস্তুতকৃত সরকারি স্বত্বলিপিই হলো খতিয়ান।</p>
+                    </div>
+
+                    <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition">
+                        <div class="font-bold text-emerald-800 text-base mb-1">২. পর্চা (Porcha)</div>
+                        <p class="text-xs text-slate-600 leading-relaxed">খতিয়ানের খসড়া বা প্রতিলিপিকে পর্চা বলে। ভূমি জরিপ চলাকালে প্রস্তুতকৃত খতিয়ানের যে অনুলিপি জমির মালিককে প্রদান করা হয় তাকে সাধারণত পর্চা বলা হয়ে থাকে।</p>
+                    </div>
+
+                    <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition">
+                        <div class="font-bold text-emerald-800 text-base mb-1">৩. জমা খারিজ / নামজারি (Mutation)</div>
+                        <p class="text-xs text-slate-600 leading-relaxed">ক্রয়, উত্তরাধিকার বা অন্য কোনো উপায়ে ভূমির নতুন মালিক হলে, পূর্বের মালিকের নাম কেটে সরকারি রেজিস্টারে নতুন মালিকের নাম অন্তর্ভুক্ত করা এবং পৃথক খতিয়ান খোলাকে জমা খারিজ বা নামজারি বলে।</p>
+                    </div>
+
+                    <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition">
+                        <div class="font-bold text-emerald-800 text-base mb-1">৪. দাখিলা (Dakhila / Receipt)</div>
+                        <p class="text-xs text-slate-600 leading-relaxed">ভূমি উন্নয়ন কর (খাজনা) প্রদান করার পর সংশ্লিষ্ট ভূমি অফিস বা তহসিলদার প্রজা বা ভূমির মালিককে কর আদায়ের যে আনুষ্ঠানিক রসিদ প্রদান করেন তাকে দাখিলা বলা হয়।</p>
+                    </div>
+
+                    <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition">
+                        <div class="font-bold text-emerald-800 text-base mb-1">৫. দাগ নম্বর & মৌজা (Dag No & Mouza)</div>
+                        <p class="text-xs text-slate-600 leading-relaxed">মৌজা হলো ভূমি জরিপের সর্বনিম্ন ভৌগোলিক প্রশাসনিক একক। আর একটি মৌজার অন্তর্ভুক্ত প্রত্যেকটি আলাদা খণ্ড বা ভূখণ্ডকে চিহ্নিত করার জন্য যে নির্দিষ্ট নম্বর দেওয়া হয় তাকে দাগ নম্বর বলে।</p>
+                    </div>
+
+                    <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition">
+                        <div class="font-bold text-emerald-800 text-base mb-1">৬. বয়নামা ও দখলনামা (Boyanama & Dokholnama)</div>
+                        <p class="text-xs text-slate-600 leading-relaxed">আদালতের মাধ্যমে নিলামে বিক্রিত জমির ক্রেতাকে আদালত যে সার্টিফিকেট দেন তা হলো বয়নামা। আর জমি নিলামে ক্রয়ের পর ক্রেতাকে জমি বুঝিয়ে দেওয়ার সনদ হলো দখলনামা।</p>
+                    </div>
+
+                    <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition">
+                        <div class="font-bold text-emerald-800 text-base mb-1">৭. চিটা (Chhita)</div>
+                        <p class="text-xs text-slate-600 leading-relaxed">প্রাথমিক জমি পরিমাপ বা জরিপের সময় বা বাটোয়ারা মোকদ্দমায় আমিন কর্তৃক প্রস্তুতকৃত জমির প্রাথমিক স্কেচ বা খসড়া নকশাকে চিটা বলা হয়।</p>
+                    </div>
+
+                    <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition">
+                        <div class="font-bold text-emerald-800 text-base mb-1">৮. জমাবন্দি & হুকুমনামা (Jomabondi & Hokumnama)</div>
+                        <p class="text-xs text-slate-600 leading-relaxed">জমাবন্দি হলো জমিদার আমলের খাজনা আদায় সম্পর্কিত রেজিস্টার। আর হুকুমনামা হলো সরকারি জমি বরাদ্দ বা বন্দোবস্ত দেওয়ার চূড়ান্ত লিখিত সরকারি নির্দেশপত্র।</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer Section -->
+    <footer class="bg-slate-900 text-slate-400 text-xs py-6 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 text-center space-y-2">
+            <p class="text-slate-300 font-medium">বাংলাদেশি জমি পরিমাপ ও স্বয়ংক্রিয় ভূ-রূপান্তর প্ল্যাটফর্ম</p>
+            <p>তথ্যসূত্র: ১ শতক = ৪৩৫.৬ বর্গফুট | ১ বিঘা = ২০ কাঠা | ১ একর = ১০০ শতক | সরকারি গেজেট ও ভূমি আইন নির্দেশিকা</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Converters Core Conversion Ratios relative to SQFT (1 Sq. Feet = Baseline)
+        const SQFT_PER_SHOTOK = 435.60;
+
+        // Convert Bangla Digits to English & vice versa
+        const banglaDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+        const englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+
+        function toBanglaNum(num) {
+            if (num === null || num === undefined || isNaN(num)) return '০';
+            
+            // Format number to reasonable precision (max 4 decimals if needed)
+            let str = num.toString();
+            if (typeof num === 'number' && !Number.isInteger(num)) {
+                str = parseFloat(num.toFixed(4)).toString();
+            }
+
+            return str.replace(/\d/g, d => banglaDigits[parseInt(d)]);
+        }
+
+        // Units Metadata definitions
+        function getUnitFactors() {
+            const bighaShotokVal = parseFloat(document.getElementById('bighaStandard').value) || 33;
+            const kathaShotokVal = bighaShotokVal / 20; // 20 Katha per Bigha everywhere
+
+            return [
+                { id: 'shotok', name: 'শতক / শতাংশ / ডেসিমেল', sqft: SQFT_PER_SHOTOK, category: 'সাধারণ' },
+                { id: 'katha', name: 'কাঠা', sqft: kathaShotokVal * SQFT_PER_SHOTOK, category: 'সাধারণ' },
+                { id: 'bigha', name: 'বিঘা (' + toBanglaNum(bighaShotokVal) + ' শতক)', sqft: bighaShotokVal * SQFT_PER_SHOTOK, category: 'সাধারণ' },
+                { id: 'acre', name: 'একর', sqft: 100 * SQFT_PER_SHOTOK, category: 'সাধারণ' },
+                { id: 'hectare', name: 'হেক্টর', sqft: 247.105 * SQFT_PER_SHOTOK, category: 'সাধারণ' },
+                { id: 'kani', name: 'কানি (১২০ শতক মান)', sqft: 120 * SQFT_PER_SHOTOK, category: 'আঞ্চলিক' },
+                { id: 'ganda', name: 'গণ্ডা (২ শতক মান)', sqft: 2 * SQFT_PER_SHOTOK, category: 'আঞ্চলিক' },
+                { id: 'chhatak', name: 'ছটাক (৪৫ বর্গফুট)', sqft: 45.0, category: 'আঞ্চলিক' },
+                { id: 'paki', name: 'পাকি (' + toBanglaNum(bighaShotokVal) + ' শতক)', sqft: bighaShotokVal * SQFT_PER_SHOTOK, category: 'আঞ্চলিক' },
+                { id: 'sqft', name: 'বর্গফুট (Sq. Feet)', sqft: 1.0, category: 'বর্গ একক' },
+                { id: 'sqyard', name: 'বর্গগজ (Sq. Yard)', sqft: 9.0, category: 'বর্গ একক' },
+                { id: 'sqmeter', name: 'বর্গমিটার (Sq. Meter)', sqft: 10.7639, category: 'বর্গ একক' },
+                { id: 'sqhaat', name: 'বর্গহাত (Sq. Haat)', sqft: 2.25, category: 'বর্গ একক' },
+                { id: 'sqlink', name: 'বর্গলিংক (Sq. Link)', sqft: 0.4356, category: 'বর্গ একক' },
+                { id: 'sqkm', name: 'বর্গকিলোমিটার (Sq. Km)', sqft: 10763910.4, category: 'বর্গ একক' },
+                { id: 'sqmile', name: 'বর্গমাইল (Sq. Mile)', sqft: 27878400.0, category: 'বর্গ একক' },
+                { id: 'oyutangsho', name: 'অযুতাংশ (০.০১ শতক)', sqft: 0.01 * SQFT_PER_SHOTOK, category: 'ক্ষুদ্র একক' },
+                { id: 'kara', name: 'করা (০.৫ শতক মান)', sqft: 0.5 * SQFT_PER_SHOTOK, category: 'ক্ষুদ্র একক' },
+                { id: 'kranti', name: 'ক্রান্তি', sqft: (0.5 / 3) * SQFT_PER_SHOTOK, category: 'ক্ষুদ্র একক' }
+            ];
+        }
+
+        // Set Input Value Helper
+        function setInputValue(val) {
+            document.getElementById('inputValue').value = val;
+            performConversion();
+        }
+
+        // Main Conversion Logic Function
+        function performConversion() {
+            const inputVal = parseFloat(document.getElementById('inputValue').value) || 0;
+            const fromUnitId = document.getElementById('fromUnit').value;
+            const bighaStandardVal = document.getElementById('bighaStandard').value;
+            
+            // Update Badge
+            document.getElementById('activeStandardBadge').innerText = toBanglaNum(bighaStandardVal) + ' শতক বিঘা';
+
+            const units = getUnitFactors();
+            const selectedFromUnit = units.find(u => u.id === fromUnitId);
+
+            if (!selectedFromUnit) return;
+
+            // Base area calculation in Sq. Feet
+            const totalSqFt = inputVal * selectedFromUnit.sqft;
+
+            const gridContainer = document.getElementById('resultsGrid');
+            gridContainer.innerHTML = '';
+
+            units.forEach(unit => {
+                const convertedValue = totalSqFt / unit.sqft;
+                const isSelected = unit.id === fromUnitId;
+
+                const cardHtml = `
+                    <div class="p-3.5 rounded-xl border ${isSelected ? 'bg-emerald-50/90 border-emerald-500 ring-2 ring-emerald-400/30' : 'bg-slate-50 border-slate-200 hover:border-slate-300'} transition flex justify-between items-center">
+                        <div class="space-y-0.5">
+                            <div class="text-xs font-semibold text-slate-500">${unit.category}</div>
+                            <div class="text-sm font-bold ${isSelected ? 'text-emerald-900' : 'text-slate-800'}">${unit.name}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-base font-extrabold ${isSelected ? 'text-emerald-700' : 'text-teal-700'}">${toBanglaNum(convertedValue)}</div>
+                            <div class="text-[10px] text-slate-400">${unit.id.toUpperCase()}</div>
+                        </div>
+                    </div>
+                `;
+                gridContainer.insertAdjacentHTML('beforeend', cardHtml);
+            });
+        }
+
+        // Navigation Tab Switching
+        function switchTab(tabName) {
+            const tabs = ['converter', 'area', 'glossary'];
+            tabs.forEach(t => {
+                const sec = document.getElementById('section-' + t);
+                const btn = document.getElementById('tab-' + t);
+                if (t === tabName) {
+                    sec.classList.remove('hidden');
+                    btn.classList.add('border-emerald-600', 'text-emerald-700', 'font-semibold');
+                    btn.classList.remove('border-transparent', 'text-slate-500');
+                } else {
+                    sec.classList.add('hidden');
+                    btn.classList.remove('border-emerald-600', 'text-emerald-700', 'font-semibold');
+                    btn.classList.add('border-transparent', 'text-slate-500');
+                }
+            });
+        }
+
+        // Land Shape Input Form Populate
+        function updateShapeInputs() {
+            const shape = document.getElementById('shapeType').value;
+            const container = document.getElementById('shapeInputContainer');
+            container.innerHTML = '';
+
+            let inputs = [];
+            if (shape === 'rect') {
+                inputs = [
+                    { id: 'side1', label: 'দৈর্ঘ্য (Length)' },
+                    { id: 'side2', label: 'প্রস্থ (Width)' }
+                ];
+            } else if (shape === 'quad_avg') {
+                inputs = [
+                    { id: 'length1', label: 'উত্তর বাহু (দৈর্ঘ্য ১)' },
+                    { id: 'length2', label: 'দক্ষিণ বাহু (দৈর্ঘ্য ২)' },
+                    { id: 'width1', label: 'পূর্ব বাহু (প্রস্থ ১)' },
+                    { id: 'width2', label: 'পশ্চিম বাহু (প্রস্থ ২)' }
+                ];
+            } else if (shape === 'triangle') {
+                inputs = [
+                    { id: 'triA', label: 'প্রথম বাহু (A)' },
+                    { id: 'triB', label: 'দ্বিতীয় বাহু (B)' },
+                    { id: 'triC', label: 'তৃতীয় বাহু (C)' }
+                ];
+            }
+
+            inputs.forEach(inp => {
+                const html = `
+                    <div>
+                        <label for="${inp.id}" class="block text-xs font-semibold text-slate-600 mb-1">${inp.label}</label>
+                        <input type="number" id="${inp.id}" step="any" min="0" placeholder="০" oninput="calculateArea()" class="w-full px-3 py-2 text-sm font-semibold rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none bg-white">
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', html);
+            });
+
+            calculateArea();
+        }
+
+        // Calculate Land Area Logic
+        function calculateArea() {
+            const shape = document.getElementById('shapeType').value;
+            const unit = document.getElementById('calcUnit').value;
+            const bighaShotok = parseFloat(document.getElementById('bighaStandard').value) || 33;
+            let areaInSelectedUnitSq = 0;
+
+            if (shape === 'rect') {
+                const l = parseFloat(document.getElementById('side1')?.value) || 0;
+                const w = parseFloat(document.getElementById('side2')?.value) || 0;
+                areaInSelectedUnitSq = l * w;
+            } else if (shape === 'quad_avg') {
+                const l1 = parseFloat(document.getElementById('length1')?.value) || 0;
+                const l2 = parseFloat(document.getElementById('length2')?.value) || 0;
+                const w1 = parseFloat(document.getElementById('width1')?.value) || 0;
+                const w2 = parseFloat(document.getElementById('width2')?.value) || 0;
+                const avgL = (l1 + l2) / 2;
+                const avgW = (w1 + w2) / 2;
+                areaInSelectedUnitSq = avgL * avgW;
+            } else if (shape === 'triangle') {
+                const a = parseFloat(document.getElementById('triA')?.value) || 0;
+                const b = parseFloat(document.getElementById('triB')?.value) || 0;
+                const c = parseFloat(document.getElementById('triC')?.value) || 0;
+                if (a + b > c && a + c > b && b + c > a) {
+                    const s = (a + b + c) / 2;
+                    areaInSelectedUnitSq = Math.sqrt(s * (s - a) * (s - b) * (s - c));
+                } else {
+                    areaInSelectedUnitSq = 0;
+                }
+            }
+
+            // Convert to Sq. Feet
+            let totalSqFt = 0;
+            if (unit === 'feet') totalSqFt = areaInSelectedUnitSq;
+            else if (unit === 'haat') totalSqFt = areaInSelectedUnitSq * 2.25;
+            else if (unit === 'link') totalSqFt = areaInSelectedUnitSq * 0.4356;
+            else if (unit === 'gaj') totalSqFt = areaInSelectedUnitSq * 9.0;
+            else if (unit === 'meter') totalSqFt = areaInSelectedUnitSq * 10.7639;
+
+            // Output Calculations
+            const totalShotok = totalSqFt / SQFT_PER_SHOTOK;
+            const kathaRatio = (bighaShotok / 20) * SQFT_PER_SHOTOK;
+            const totalKatha = totalSqFt / kathaRatio;
+            const totalBigha = totalShotok / bighaShotok;
+
+            document.getElementById('calcResultSqft').innerText = toBanglaNum(totalSqFt);
+            document.getElementById('calcResultShotok').innerText = toBanglaNum(totalShotok);
+            document.getElementById('calcResultKatha').innerText = toBanglaNum(totalKatha);
+            document.getElementById('calcResultBigha').innerText = toBanglaNum(totalBigha);
+        }
+
+        // Initialize on Load
+        window.onload = function() {
+            updateShapeInputs();
+            performConversion();
+        };
+    </script>
+</body>
+</html>
